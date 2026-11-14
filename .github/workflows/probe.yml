@@ -1,0 +1,24 @@
+name: probe
+on:
+  push:
+    branches: ["ci/probe-*"]
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        src: [pypi, main]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q torch torchvision --index-url https://download.pytorch.org/whl/cpu
+      - run: |
+          if [ "${{ matrix.src }}" = pypi ]; then pip install -q ultralytics; else pip install -q "ultralytics @ git+https://github.com/ultralytics/ultralytics@main"; fi
+          pip install -q polars shapely
+          python -c "import ultralytics; print('VERSION', ultralytics.__version__)"
+      - run: |
+          for f in probes/*.py; do echo "=================== $f"; python -u "$f" 2>&1 | grep -v -E "Downloading|%\|" ; done
