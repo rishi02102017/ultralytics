@@ -21,4 +21,5 @@ jobs:
           pip install -q polars shapely
           python -c "import ultralytics; print('VERSION', ultralytics.__version__)"
       - run: |
-          for f in probes/*.py; do echo "=================== $f"; python -u "$f" 2>&1 | grep -v -E "Downloading|%\|" ; done
+          for f in probes/*.py; do [ -e "$f" ] || continue; echo "=================== $f"; python -u "$f" 2>&1 | grep -v -E "Downloading|%\|" ; done
+          for f in probes/*.sh; do [ -e "$f" ] || continue; echo "=================== $f"; bash "$f"; done
